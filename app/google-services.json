@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "605047076878",
+    "project_id": "cost-settler-a3eef",
+    "storage_bucket": "cost-settler-a3eef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:605047076878:android:125ac96697531694dee45f",
+        "android_client_info": {
+          "package_name": "edu.uga.cs.costsettler"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzYuzXj9iSaKWF9G_zhSEkIr6x860a23k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
