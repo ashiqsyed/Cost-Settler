@@ -48,8 +48,9 @@ public class RegistrationActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Registered user: " + email, Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "user created");
                                 //TODO create intent to go to activity for viewing items
-                                Intent intent = new Intent(view.getContext(), ViewItemsActivity.class);
+                                Intent intent = new Intent(view.getContext(), NavigationHostActivity.class);
                                 startActivity(intent);
+                                finish();
                             } else {
                                 Log.w(TAG, "user failed to create", task.getException());
                                 Toast.makeText(RegistrationActivity.this, "An account with this email already exists. Please enter another email.", Toast.LENGTH_SHORT).show();

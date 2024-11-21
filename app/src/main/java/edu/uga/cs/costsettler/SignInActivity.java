@@ -47,8 +47,9 @@ public class SignInActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "Sign in successful, email: " + email);
-                                Intent intent = new Intent(SignInActivity.this, ViewItemsActivity.class);
+                                Intent intent = new Intent(SignInActivity.this, NavigationHostActivity.class);
                                 startActivity(intent);
+                                finish();
                             } else {
                                 Log.d(TAG, "Sign in failed");
                                 Toast.makeText(SignInActivity.this, "An account with this email does not exist.", Toast.LENGTH_SHORT).show();

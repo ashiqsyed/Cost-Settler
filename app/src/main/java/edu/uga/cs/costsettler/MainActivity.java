@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = mAuth.getCurrentUser();
                 if (user != null) { //user is logged in
                     Log.d(TAG, "User should be logged in");
-                    Intent intent = new Intent(MainActivity.this, ViewItemsActivity.class);
+                    Intent intent = new Intent(MainActivity.this, NavigationHostActivity.class);
                     startActivity(intent);
                 }
             }

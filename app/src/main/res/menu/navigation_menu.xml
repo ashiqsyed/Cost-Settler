@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+    <item
+        android:id="@+id/home"
+        android:title="Home"/>
+
+    <item
+        android:id="@+id/shopping_list"
+        android:title="Shopping List"/>
+
+    <item
+        android:id="@+id/shopping_cart"
+        android:title="Shopping Cart"/>
+
+    <item
+        android:id="@+id/purchases"
+        android:title="Purchases"/>
+
+    <item
+        android:id="@+id/cost_overview"
+        android:title="Cost Overview"/>
+
+    <item
+        android:id="@+id/logout"
+        android:title="Logout"
+        />
+
+</menu>
