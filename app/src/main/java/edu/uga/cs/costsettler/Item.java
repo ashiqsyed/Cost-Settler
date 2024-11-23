@@ -1,35 +1,18 @@
 package edu.uga.cs.costsettler;
 
 public class Item {
-    private double price;
     private String itemName;
     private int quantity;
-    private boolean isNeeded;
-    private boolean isPurchased;
     private String key;
 
-    public Item(double price, String itemName, int quantity) {
-        this.price = price;
+    public Item(String itemName, int quantity) {
         this.itemName = itemName;
         this.quantity = quantity;
-        this.isNeeded = false;
-        this.isPurchased = false;
     }
 
     public Item() {
-        this.price = 0;
-        this.itemName = null;
+        this.itemName = "";
         this.quantity = 0;
-        this.isNeeded = false;
-        this.isPurchased = false;
-
-    }
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
     }
 
     public String getItemName() {
@@ -48,22 +31,6 @@ public class Item {
         this.quantity = quantity;
     }
 
-    public boolean getIsNeeded() {
-        return isNeeded;
-    }
-
-    public void setIsNeeded(boolean isNeeded) {
-        this.isNeeded = isNeeded;
-    }
-
-    public boolean getIsPurchased() {
-        return isPurchased;
-    }
-
-    public void setIsPurchased(boolean isPurchased) {
-        this.isPurchased = isPurchased;
-    }
-
     public String getKey() {
         return key;
     }
@@ -73,6 +40,6 @@ public class Item {
     }
 
     public String toString() {
-        return "Item: " + itemName + ", price: " + price + ", quantity: " + quantity;
+        return "Item: " + itemName + ", "+ "quantity: " + quantity;
     }
 }

@@ -12,7 +12,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;;
+import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -79,6 +79,8 @@ public class NavigationHostActivity extends AppCompatActivity {
 
         if (menuItem.getItemId() == R.id.home) {
             fragment = new HomeFragment();
+        } else if (menuItem.getItemId() == R.id.add_item) {
+            fragment = new AddItemFragment();
         } else if (menuItem.getItemId() == R.id.shopping_list) {
             fragment = new ShoppingListFragment();
         } else if (menuItem.getItemId() == R.id.shopping_cart) {
@@ -95,9 +97,9 @@ public class NavigationHostActivity extends AppCompatActivity {
         } //else if
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace( R.id.fragmentContainerView, fragment).addToBackStack("main screen" ).commit();
+        fragmentManager.beginTransaction().replace( R.id.fragmentContainerView, fragment).addToBackStack(null).commit();
 
-        setTitle( menuItem.getTitle());
+        setTitle(menuItem.getTitle());
 
         // Close the navigation drawer
         drawerLayout.closeDrawers();
