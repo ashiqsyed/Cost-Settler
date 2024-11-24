@@ -12,7 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -76,6 +81,30 @@ public class ShoppingCartFragment extends Fragment {
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.d(TAG, "ValueEventListener: failed to read from Firebase" );
             }
+        });
+
+
+        Button purchaseButton = view.findViewById(R.id.purchaseButton);
+        EditText costInput = view.findViewById(R.id.costInput);
+        DatabaseReference ref2 = db.getReference("purchases");
+        purchaseButton.setOnClickListener(view2 -> {
+            double cost = Double.parseDouble(costInput.getText().toString());
+            Purchase purchase = new Purchase(items, cost, "test");
+            ref2.push().setValue(purchase)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Log.d(TAG, "purchase added to database");
+                            Toast.makeText(getContext(), "Purchase made", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "Purchase not added to database");
+                            Toast.makeText(getContext(), "Purchase failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
 
 
