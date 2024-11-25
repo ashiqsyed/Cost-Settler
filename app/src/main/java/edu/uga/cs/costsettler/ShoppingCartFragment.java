@@ -25,6 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -89,13 +90,21 @@ public class ShoppingCartFragment extends Fragment {
         DatabaseReference ref2 = db.getReference("purchases");
         purchaseButton.setOnClickListener(view2 -> {
             double cost = Double.parseDouble(costInput.getText().toString());
-            Purchase purchase = new Purchase(items, cost, "test");
+
+            Purchase purchase = new Purchase(items, cost, "test", new Date().toString());
+            //clear the List, remove it from the shopping cart in firebase, add it to purchases in firebase
             ref2.push().setValue(purchase)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
+
                         @Override
                         public void onSuccess(Void unused) {
                             Log.d(TAG, "purchase added to database");
                             Toast.makeText(getContext(), "Purchase made", Toast.LENGTH_SHORT).show();
+                            items.clear(); //clear list
+                            itemRecyclerAdapter.notifyDataSetChanged();
+                            ref.removeValue(); //removes it from firebase "shoppingcart"
+
+
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

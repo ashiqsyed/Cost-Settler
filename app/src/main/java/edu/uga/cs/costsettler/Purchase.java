@@ -7,13 +7,13 @@ public class Purchase {
     private List<Item> itemsPurchased;
     private double cost;
     private String user;
-    private Date datePurchased;
+    private String datePurchased;
 
-    public Purchase(List<Item> itemsPurchased, double cost, String user) {
+    public Purchase(List<Item> itemsPurchased, double cost, String user, String datePurchased) {
         this.itemsPurchased = itemsPurchased;
         this.cost = cost;
         this.user = user;
-        datePurchased = new Date();
+        this.datePurchased = datePurchased;
     }
 
     public List<Item> getItemsPurchased() {
@@ -42,5 +42,13 @@ public class Purchase {
 
     public String toString() {
         return "Purchase of size " + itemsPurchased.size() + " made on " + datePurchased;
+    }
+
+    public String getDatePurchased() {
+        return datePurchased;
+    }
+
+    public void setDatePurchased(String datePurchased) {
+        this.datePurchased = datePurchased;
     }
 }
