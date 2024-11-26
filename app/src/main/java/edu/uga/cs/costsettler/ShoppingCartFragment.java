@@ -4,7 +4,9 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,6 +22,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -40,6 +43,8 @@ public class ShoppingCartFragment extends Fragment {
     private ItemRecyclerAdapter itemRecyclerAdapter;
     private List<Item> items;
     private Bundle bundle;
+    private String key;
+    private View topView;
 
     private FirebaseDatabase db;
 
@@ -61,17 +66,22 @@ public class ShoppingCartFragment extends Fragment {
         db = FirebaseDatabase.getInstance();
         recycler = view.findViewById(R.id.cart);
         items = new ArrayList<Item>();
+        topView = view;
 
         RecyclerView.LayoutManager manager = new LinearLayoutManager(view.getContext());
         recycler.setLayoutManager(manager);
 
+        Button purchaseButton = view.findViewById(R.id.purchaseButton);
+        EditText costInput = view.findViewById(R.id.costInput);
+
 
         DatabaseReference ref = db.getReference("shoppingCart");
         if (bundle != null) {
+            key = bundle.getString("key");
             Log.d(TAG, "currently editing a purchase");
-            Log.d(TAG, "editing purchase with key " + bundle.getString("purchaseKey"));
-            DatabaseReference ref2 = db.getReference("purchases").child(bundle.getString("purchaseKey")).child("itemsPurchased");
-            itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingCart", bundle.getString("purchaseKey"));
+            Log.d(TAG, "editing purchase with key " + key);
+            DatabaseReference ref2 = db.getReference("purchases").child(key).child("itemsPurchased");
+            itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingCart", key);
 
             recycler.setAdapter(itemRecyclerAdapter);
             ref2.addValueEventListener(new ValueEventListener() {
@@ -87,15 +97,15 @@ public class ShoppingCartFragment extends Fragment {
                     }
 
                     itemRecyclerAdapter.notifyDataSetChanged();
-
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-
                 }
             });
             recycler.setAdapter(itemRecyclerAdapter);
+
+            costInput.setText(Double.toString(bundle.getDouble("cost")));
         } else {
             itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingCart", null);
 
@@ -112,6 +122,8 @@ public class ShoppingCartFragment extends Fragment {
                         Log.d(TAG, "ValueEventListener: key " + item.getKey());
                     }
                     itemRecyclerAdapter.notifyDataSetChanged();
+
+
                 }
 
                 @Override
@@ -123,39 +135,55 @@ public class ShoppingCartFragment extends Fragment {
 
 
 
-
-
-
-
-        Button purchaseButton = view.findViewById(R.id.purchaseButton);
-        EditText costInput = view.findViewById(R.id.costInput);
-        DatabaseReference ref2 = db.getReference("purchases");
         purchaseButton.setOnClickListener(view2 -> {
+            DatabaseReference ref2;
+            Purchase purchase;
             double cost = Double.parseDouble(costInput.getText().toString());
+            if (bundle == null) {
+                ref2 = db.getReference("purchases");
+                purchase = new Purchase(items, cost, "test", new Date().toString());
+                ref2.push().setValue(purchase)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
 
-            Purchase purchase = new Purchase(items, cost, "test", new Date().toString());
-            //clear the List, remove it from the shopping cart in firebase, add it to purchases in firebase
-            ref2.push().setValue(purchase)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Log.d(TAG, "purchase added to database");
+                                Toast.makeText(getContext(), "Purchase made", Toast.LENGTH_SHORT).show();
+                                items.clear(); //clear list
+                                itemRecyclerAdapter.notifyDataSetChanged();
+                                ref.removeValue(); //removes it from firebase "shoppingcart"
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "Purchase not added to database");
+                                Toast.makeText(getContext(), "Purchase failed", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } else {
+                ref2 = db.getReference("purchases").child(key);
+                purchase = new Purchase(items, cost, bundle.getString("user"), bundle.getString("date"));
+                ref2.setValue(purchase)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
 
-                        @Override
-                        public void onSuccess(Void unused) {
-                            Log.d(TAG, "purchase added to database");
-                            Toast.makeText(getContext(), "Purchase made", Toast.LENGTH_SHORT).show();
-                            items.clear(); //clear list
-                            itemRecyclerAdapter.notifyDataSetChanged();
-                            ref.removeValue(); //removes it from firebase "shoppingcart"
-
-
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, "Purchase not added to database");
-                            Toast.makeText(getContext(), "Purchase failed", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Log.d(TAG, "purchase edited in database");
+                                Toast.makeText(getContext(), "Purchase edited", Toast.LENGTH_SHORT).show();
+                                AppCompatActivity activity = (AppCompatActivity) topView.getContext();
+                                FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                                fragmentManager.popBackStack();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "Purchase not edited in database");
+                                Toast.makeText(getContext(), "Purchase edit failed", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
         });
 
 

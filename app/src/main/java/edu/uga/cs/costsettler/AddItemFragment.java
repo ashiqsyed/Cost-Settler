@@ -24,6 +24,7 @@ public class AddItemFragment extends Fragment {
     private final String TAG = "AddItemFragment.java";
     private Bundle bundle;
     private View topView;
+    private String path;
 
     public AddItemFragment() {
         //empty constructor
@@ -55,6 +56,7 @@ public class AddItemFragment extends Fragment {
         if(bundle != null) {
             itemNameInput.setText(bundle.getString("name"));
             quantityInput.setText(bundle.getString("quantity"));
+            path = bundle.getString("path");
         }
 
         addButton.setOnClickListener(view2 -> {
@@ -70,9 +72,15 @@ public class AddItemFragment extends Fragment {
 
     public void addItem(Item item) {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference ref = db.getReference("shoppingList");
+        DatabaseReference ref = db.getReference(path);
         if (bundle != null) {
-            ref.child(bundle.getString("key")).setValue(item)
+            if (bundle.getInt("position") != -1) {
+                ref = db.getReference("purchases").child(bundle.getString("key"))
+                        .child("itemsPurchased").child(Integer.toString(bundle.getInt("position")));
+            } else {
+                ref.child(bundle.getString("key"));
+            }
+            ref.setValue(item)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
@@ -80,7 +88,7 @@ public class AddItemFragment extends Fragment {
 
                             AppCompatActivity activity = (AppCompatActivity) topView.getContext();
                             FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                            fragmentManager.beginTransaction().replace( R.id.fragmentContainerView, new ShoppingListFragment()).commit();
+                            fragmentManager.popBackStack();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

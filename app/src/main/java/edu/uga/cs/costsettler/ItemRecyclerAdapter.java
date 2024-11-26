@@ -2,7 +2,6 @@ package edu.uga.cs.costsettler;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -97,18 +96,6 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
     }
 
     public void onBindViewHolder(ItemHolder holder, int pos) {
-//        Item item = new Item();
-//        String itemString = "";
-//        Purchase purchase;
-//        String purchaseString = "";
-//        if (items != null) {
-//            item = items.get(pos);
-//             itemString = item.toString();
-//        }
-//        if (purchases != null) {
-//            purchase = purchases.get(pos);
-//            purchaseString = purchase.toString();
-//        }
 
         if (items != null) {
             Item item = items.get(pos);
@@ -137,38 +124,60 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                         }
                     });
                 } else if (path.equals("shoppingCart")) {
-                    ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Log.d(TAG, "deleted item " + item.getItemName() + " key " + item.getKey());
-                                    item.setKey(null);
-                                    ref = db.getReference("shoppingList");
-                                    ref.push().setValue(item)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void unused) {
-                                                    Log.d(TAG, "Item added to Firebase database");
-                                                    Toast.makeText(context.getApplicationContext(), "Item removed from the shopping cart", Toast.LENGTH_SHORT).show();
-                                                }
-                                            })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.d(TAG, "Item was not added to Firebase database");
-                                                    Toast.makeText(context.getApplicationContext(), "Failed to remove item from the shopping cart.", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                }
-                            });
-                        }
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.d(TAG, "Failed to delete item " + item.getItemName() + " key " + item.getKey());
-                        }
-                    });
+                    if (key == null) {
+                        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void unused) {
+                                        Log.d(TAG, "deleted item " + item.getItemName() + " key " + item.getKey());
+                                        item.setKey(null);
+                                        ref = db.getReference("shoppingList");
+                                        ref.push().setValue(item)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        Log.d(TAG, "Item added to Firebase database");
+                                                        Toast.makeText(context.getApplicationContext(), "Item removed from the shopping cart", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.d(TAG, "Item was not added to Firebase database");
+                                                        Toast.makeText(context.getApplicationContext(), "Failed to remove item from the shopping cart.", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.d(TAG, "Failed to delete item " + item.getItemName() + " key " + item.getKey());
+                            }
+                        });
+                    } else {
+                        ref = db.getReference("purchases").child(key).child("itemsPurchased");
+                        items.remove(pos);
+                        ref.setValue(items)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                                    @Override
+                                    public void onSuccess(Void unused) {
+                                        Log.d(TAG, "Item removed from database");
+                                        Toast.makeText(context.getApplicationContext(), "Item removed", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d(TAG, "Item not removed from database");
+                                        Toast.makeText(context.getApplicationContext(), "Item remove failed", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
                 } else {
                     Log.d(TAG, "Delete purchase");
                     ref.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -198,13 +207,15 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                 }
 
             });
-            //TODO fix bug: when clicking add item after pressing edit, it adds duplicate item to shoppinglist
+
             holder.editButton.setOnClickListener(view -> {
                 Fragment fragment = new AddItemFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("name", item.getItemName());
-                bundle.putString("key", item.getKey());
+                if (key != null) {bundle.putString("key", key);} else {bundle.putString("key", item.getKey());}
                 bundle.putString("quantity", Integer.toString(item.getQuantity()));
+                bundle.putString("path", path);
+                if (key != null) { bundle.putInt("position", pos); } else { bundle.putInt("position", -1); }
                 fragment.setArguments(bundle);
                 Log.d(TAG, "Edit item " + item.getItemName() + " key " + item.getKey());
                 Log.d(TAG, "size: " + items.size());
@@ -212,7 +223,8 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
 
                 AppCompatActivity activity = (AppCompatActivity) topView.getContext();
                 FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                fragmentManager.beginTransaction().replace( R.id.fragmentContainerView, fragment).commit();
+                fragmentManager.beginTransaction().replace( R.id.fragmentContainerView, fragment).
+                        addToBackStack(null).commit();
             });
 
             if (path.equals("shoppingList")) {
@@ -262,181 +274,43 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
             String purchaseString = purchase.toString();
 
             holder.itemView.setText(purchaseString);
-            if (path.equals("purchases")) {
-                Log.d(TAG, "set buttons to purchases actions");
-                holder.deleteButton.setOnClickListener(view -> {
-//                   Log.d(TAG, "Delete purchase with key " + purchase.getKey() + " with items " + purchases.get(pos).toString());
-                    ref = db.getReference().child(path).child(purchase.getKey());
-                    ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Log.d(TAG, "Purchase removed successfully");
-                                    Toast.makeText(context, "Purchase removed", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
+            Log.d(TAG, "set buttons to purchases actions");
+            holder.deleteButton.setOnClickListener(view -> {
+                ref = db.getReference().child(path).child(purchase.getKey());
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Log.d(TAG, "Purchase removed successfully");
+                                Toast.makeText(context, "Purchase removed", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.d(TAG, "Purchase not removed");
-                            Toast.makeText(context, "Could not remove the purchase", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.d(TAG, "Purchase not removed");
+                        Toast.makeText(context, "Could not remove the purchase", Toast.LENGTH_SHORT).show();
+                    }
                 });
-                holder.editButton.setOnClickListener(view -> {
-                   Fragment fragment = new ShoppingCartFragment();
-                   Bundle bundle = new Bundle();
-                   bundle.putString("purchaseKey", purchase.getKey());
-                   Log.d(TAG, "edit purchase " + purchase.toString());
-                   fragment.setArguments(bundle);
-                   AppCompatActivity activity = (AppCompatActivity) topView.getContext();
-                   FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                   fragmentManager.beginTransaction().replace(R.id.fragmentContainerView, fragment).commit();
-                });
-            }
+            });
+            holder.editButton.setOnClickListener(view -> {
+               Fragment fragment = new ShoppingCartFragment();
+               Bundle bundle = new Bundle();
+               bundle.putString("key", purchase.getKey());
+               bundle.putString("user", purchase.getUser());
+               bundle.putString("date", purchase.getDatePurchased());
+               bundle.putDouble("cost", purchase.getCost());
+               Log.d(TAG, "edit purchase " + purchase.toString());
+               fragment.setArguments(bundle);
+               AppCompatActivity activity = (AppCompatActivity) topView.getContext();
+               FragmentManager fragmentManager = activity.getSupportFragmentManager();
+               fragmentManager.beginTransaction().replace(R.id.fragmentContainerView, fragment).
+                       addToBackStack(null).commit();
+            });
         }
-
-
-//        holder.deleteButton.setOnClickListener(view -> {
-//            Log.d(TAG, "Delete item " + item.getItemName() + " key " + item.getKey());
-//            ref = db.getReference().child(path).child(item.getKey());
-//            if(path.equals("shoppingList")) {
-//
-//
-//                ref.addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void unused) {
-//                                Log.d(TAG, "deleted item " + item.getItemName() + " key " + item.getKey());
-//                                Toast.makeText(context.getApplicationContext(), "Deleted Item", Toast.LENGTH_SHORT).show();
-//                            }
-//                        });
-//                    }
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//                        Log.d(TAG, "Failed to delete item " + item.getItemName() + " key " + item.getKey());
-//                        Toast.makeText(context.getApplicationContext(), "failed to delete item", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//            } else if (path.equals("shoppingCart")) {
-//                ref.addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void unused) {
-//                                Log.d(TAG, "deleted item " + item.getItemName() + " key " + item.getKey());
-//                                item.setKey(null);
-//                                ref = db.getReference("shoppingList");
-//                                ref.push().setValue(item)
-//                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                            @Override
-//                                            public void onSuccess(Void unused) {
-//                                                Log.d(TAG, "Item added to Firebase database");
-//                                                Toast.makeText(context.getApplicationContext(), "Item removed from the shopping cart", Toast.LENGTH_SHORT).show();
-//                                            }
-//                                        })
-//                                        .addOnFailureListener(new OnFailureListener() {
-//                                            @Override
-//                                            public void onFailure(@NonNull Exception e) {
-//                                                Log.d(TAG, "Item was not added to Firebase database");
-//                                                Toast.makeText(context.getApplicationContext(), "Failed to remove item from the shopping cart.", Toast.LENGTH_SHORT).show();
-//                                            }
-//                                        });
-//                            }
-//                        });
-//                    }
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//                        Log.d(TAG, "Failed to delete item " + item.getItemName() + " key " + item.getKey());
-//                    }
-//                });
-//            } else {
-//                Log.d(TAG, "Delete purchase");
-//                ref.addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void unused) {
-//                                Log.d(TAG, "Removed purchase");
-//                                Toast.makeText(context, "Removed Purchase", Toast.LENGTH_SHORT).show();
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//                                Log.d(TAG, "Failed to remove purchase");
-//                                Toast.makeText(context, "Could not remove purchase", Toast.LENGTH_SHORT).show();
-//                            }
-//                        });
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//                        Log.d(TAG, "error");
-//                        Toast.makeText(context, "error", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//            }
-//
-//        });
-//        holder.editButton.setOnClickListener(view -> {
-//            Fragment fragment = new AddItemFragment();
-//            Bundle bundle = new Bundle();
-//            bundle.putString("name", item.getItemName());
-//            bundle.putString("key", item.getKey());
-//            bundle.putString("quantity", Integer.toString(item.getQuantity()));
-//            fragment.setArguments(bundle);
-//            Log.d(TAG, "Edit item " + item.getItemName() + " key " + item.getKey());
-//            Log.d(TAG, "size: " + items.size());
-//
-//            AppCompatActivity activity = (AppCompatActivity) topView.getContext();
-//            FragmentManager fragmentManager = activity.getSupportFragmentManager();
-//            fragmentManager.beginTransaction().replace( R.id.fragmentContainerView, fragment).commit();
-//        });
-//        if (path.equals("shoppingList")) {
-//          holder.addButton.setOnClickListener(view -> {
-//              Log.d(TAG, "Move item " + item.getItemName() + " key " + item.getKey());
-//              ref = db.getReference().child(path).child(item.getKey());
-//              ref.addListenerForSingleValueEvent(new ValueEventListener() {
-//                  @Override
-//                  public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                      snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-//                          @Override
-//                          public void onSuccess(Void unused) {
-//                              Log.d(TAG, "deleted item " + item.getItemName() + " key " + item.getKey());
-//                              item.setKey(null);
-//                              ref = db.getReference("shoppingCart");
-//                              ref.push().setValue(item)
-//                                      .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                          @Override
-//                                          public void onSuccess(Void unused) {
-//                                              Log.d(TAG, "Item added to Firebase database");
-//                                              Toast.makeText(context.getApplicationContext(), "Item added to the shopping cart", Toast.LENGTH_SHORT).show();
-//                                          }
-//                                      })
-//                                      .addOnFailureListener(new OnFailureListener() {
-//                                          @Override
-//                                          public void onFailure(@NonNull Exception e) {
-//                                              Log.d(TAG, "Item was not added to Firebase database");
-//                                              Toast.makeText(context.getApplicationContext(), "Failed to add item to the shopping cart.", Toast.LENGTH_SHORT).show();
-//                                          }
-//                                      });
-//                          }
-//                      });
-//                  }
-//                  @Override
-//                  public void onCancelled(@NonNull DatabaseError error) {
-//                      Log.d(TAG, "Failed to delete item " + item.getItemName() + " key " + item.getKey());
-//                  }
-//              });
-//          });
-//        }
     }
 
     public int getItemCount() {
@@ -445,6 +319,4 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
         }
         return items.size();
     }
-
-    public String getPath() {return path;}
 }
