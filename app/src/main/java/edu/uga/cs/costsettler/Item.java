@@ -1,6 +1,8 @@
 package edu.uga.cs.costsettler;
 
-public class Item {
+import android.os.Parcelable;
+
+public class Item  {
     private String itemName;
     private int quantity;
     private String key;

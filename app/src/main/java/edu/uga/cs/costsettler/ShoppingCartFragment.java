@@ -16,8 +16,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +39,7 @@ public class ShoppingCartFragment extends Fragment {
     private RecyclerView recycler;
     private ItemRecyclerAdapter itemRecyclerAdapter;
     private List<Item> items;
+    private Bundle bundle;
 
     private FirebaseDatabase db;
 
@@ -54,35 +57,74 @@ public class ShoppingCartFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        bundle = this.getArguments();
+        db = FirebaseDatabase.getInstance();
         recycler = view.findViewById(R.id.cart);
         items = new ArrayList<Item>();
+
         RecyclerView.LayoutManager manager = new LinearLayoutManager(view.getContext());
         recycler.setLayoutManager(manager);
 
-        itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingCart");
-        recycler.setAdapter(itemRecyclerAdapter);
-        db = FirebaseDatabase.getInstance();
+
         DatabaseReference ref = db.getReference("shoppingCart");
+        if (bundle != null) {
+            Log.d(TAG, "currently editing a purchase");
+            Log.d(TAG, "editing purchase with key " + bundle.getString("purchaseKey"));
+            DatabaseReference ref2 = db.getReference("purchases").child(bundle.getString("purchaseKey")).child("itemsPurchased");
+            itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingCart", bundle.getString("purchaseKey"));
 
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                items.clear();
-                for (DataSnapshot postSnapshot: snapshot.getChildren()) {
-                    Item item = postSnapshot.getValue(Item.class);
-                    item.setKey(postSnapshot.getKey());
-                    items.add(item);
-                    Log.d(TAG, "ValueEventListener: added " + item.toString());
-                    Log.d(TAG, "ValueEventListener: key " + item.getKey());
+            recycler.setAdapter(itemRecyclerAdapter);
+            ref2.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    items.clear();
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        Item item = postSnapshot.getValue(Item.class);
+                        item.setKey(postSnapshot.getKey());
+                        items.add(item);
+                        Log.d(TAG, "ValueEventListener: added " + item.toString());
+                        Log.d(TAG, "ValueEventListener: key " + item.getKey());
+                    }
+
+                    itemRecyclerAdapter.notifyDataSetChanged();
+
                 }
-                itemRecyclerAdapter.notifyDataSetChanged();
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.d(TAG, "ValueEventListener: failed to read from Firebase" );
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+            recycler.setAdapter(itemRecyclerAdapter);
+        } else {
+            itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingCart", null);
+
+            recycler.setAdapter(itemRecyclerAdapter);
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    items.clear();
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        Item item = postSnapshot.getValue(Item.class);
+                        item.setKey(postSnapshot.getKey());
+                        items.add(item);
+                        Log.d(TAG, "ValueEventListener: added " + item.toString());
+                        Log.d(TAG, "ValueEventListener: key " + item.getKey());
+                    }
+                    itemRecyclerAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.d(TAG, "ValueEventListener: failed to read from Firebase" );
+                }
+            });
+        }
+
+
+
+
+
 
 
         Button purchaseButton = view.findViewById(R.id.purchaseButton);

@@ -8,12 +8,20 @@ public class Purchase {
     private double cost;
     private String user;
     private String datePurchased;
+    private String key;
 
     public Purchase(List<Item> itemsPurchased, double cost, String user, String datePurchased) {
         this.itemsPurchased = itemsPurchased;
         this.cost = cost;
         this.user = user;
         this.datePurchased = datePurchased;
+    }
+
+    public Purchase() {
+        cost = 0;
+        user = "";
+        datePurchased = "";
+        key = "";
     }
 
     public List<Item> getItemsPurchased() {
@@ -41,7 +49,11 @@ public class Purchase {
     }
 
     public String toString() {
-        return "Purchase of size " + itemsPurchased.size() + " made on " + datePurchased;
+        if (itemsPurchased.size() > 1) {
+            return "Purchase of " + itemsPurchased.size() + " items made on " + datePurchased + " by " + user;
+        }
+        return "Purchase of 1 item made on " + datePurchased + " by " + user;
+
     }
 
     public String getDatePurchased() {
@@ -51,4 +63,13 @@ public class Purchase {
     public void setDatePurchased(String datePurchased) {
         this.datePurchased = datePurchased;
     }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
 }

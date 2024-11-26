@@ -55,7 +55,7 @@ public class ShoppingListFragment extends Fragment {
         RecyclerView.LayoutManager manager = new LinearLayoutManager(view.getContext());
         recycler.setLayoutManager(manager);
 
-        itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingList");
+        itemRecyclerAdapter = new ItemRecyclerAdapter(items, view.getContext(), "shoppingList", null);
         recycler.setAdapter(itemRecyclerAdapter);
         db = FirebaseDatabase.getInstance();
         DatabaseReference ref = db.getReference("shoppingList");
