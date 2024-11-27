@@ -25,6 +25,8 @@ public class AddItemFragment extends Fragment {
     private Bundle bundle;
     private View topView;
     private String path;
+    EditText itemNameInput;
+    EditText quantityInput;
 
     public AddItemFragment() {
         //empty constructor
@@ -46,8 +48,8 @@ public class AddItemFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        EditText itemNameInput = view.findViewById(R.id.itemNameInput);
-        EditText quantityInput = view.findViewById(R.id.quantityInput);
+        itemNameInput = view.findViewById(R.id.itemNameInput);
+        quantityInput = view.findViewById(R.id.quantityInput);
         Button addButton = view.findViewById(R.id.addItemButton);
 
         bundle = this.getArguments();
@@ -57,7 +59,7 @@ public class AddItemFragment extends Fragment {
             itemNameInput.setText(bundle.getString("name"));
             quantityInput.setText(bundle.getString("quantity"));
             path = bundle.getString("path");
-        }
+        } else {path = "shoppingList";}
 
         addButton.setOnClickListener(view2 -> {
             String itemName = itemNameInput.getText().toString();
@@ -72,14 +74,16 @@ public class AddItemFragment extends Fragment {
 
     public void addItem(Item item) {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference ref = db.getReference(path);
+        DatabaseReference ref = db.getReference().child(path);
         if (bundle != null) {
             if (bundle.getInt("position") != -1) {
                 ref = db.getReference("purchases").child(bundle.getString("key"))
                         .child("itemsPurchased").child(Integer.toString(bundle.getInt("position")));
-            } else {
-                ref.child(bundle.getString("key"));
-            }
+            } else if (path.equals("shoppingCart")){
+                String user = NavigationHostActivity.getUser();
+                user = user.substring(0, user.indexOf("@"));
+                ref = ref.child(user).child(bundle.getString("key"));
+            } else {ref = ref.child(bundle.getString("key"));}
             ref.setValue(item)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -95,7 +99,6 @@ public class AddItemFragment extends Fragment {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Log.d(TAG, "Item was not added to Firebase database");
-
                             Toast.makeText(getContext(), "Item was not added to the shopping list.", Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -105,8 +108,9 @@ public class AddItemFragment extends Fragment {
                         @Override
                         public void onSuccess(Void unused) {
                             Log.d(TAG, "Item added to Firebase database");
-
                             Toast.makeText(getContext(), "Item added to the shopping list", Toast.LENGTH_SHORT).show();
+                            itemNameInput.setText(null);
+                            quantityInput.setText(null);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

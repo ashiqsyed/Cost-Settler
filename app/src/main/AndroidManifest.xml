@@ -13,16 +13,10 @@
         android:theme="@style/Theme.CostSettler"
         tools:targetApi="31">
         <activity
-            android:name=".AddItemActivity"
-            android:exported="false" />
-        <activity
             android:name=".NavigationHostActivity"
             android:exported="false" />
         <activity
             android:name=".SignInActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ViewItemsActivity"
             android:exported="false" />
         <activity
             android:name=".RegistrationActivity"

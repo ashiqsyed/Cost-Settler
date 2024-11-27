@@ -1,5 +1,6 @@
 package edu.uga.cs.costsettler;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,7 +49,7 @@ public class ShoppingCartFragment extends Fragment {
     private View topView;
 
     private FirebaseDatabase db;
-
+    private String user;
     public ShoppingCartFragment() {
         // Required empty public constructor
     }
@@ -74,8 +76,10 @@ public class ShoppingCartFragment extends Fragment {
         Button purchaseButton = view.findViewById(R.id.purchaseButton);
         EditText costInput = view.findViewById(R.id.costInput);
 
+        user = NavigationHostActivity.getUser();
+        user = user.substring(0, user.indexOf("@"));
 
-        DatabaseReference ref = db.getReference("shoppingCart");
+        DatabaseReference ref = db.getReference("shoppingCart").child(user);
         if (bundle != null) {
             key = bundle.getString("key");
             Log.d(TAG, "currently editing a purchase");
@@ -141,7 +145,7 @@ public class ShoppingCartFragment extends Fragment {
             double cost = Double.parseDouble(costInput.getText().toString());
             if (bundle == null) {
                 ref2 = db.getReference("purchases");
-                purchase = new Purchase(items, cost, "test", new Date().toString());
+                purchase = new Purchase(items, cost, user, new Date().toString());
                 ref2.push().setValue(purchase)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
 

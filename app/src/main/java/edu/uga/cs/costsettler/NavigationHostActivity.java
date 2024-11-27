@@ -28,6 +28,7 @@ public class NavigationHostActivity extends AppCompatActivity {
     private ActionBarDrawerToggle drawerToggle;
 
     private FirebaseAuth mAuth;
+    private static String user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,7 @@ public class NavigationHostActivity extends AppCompatActivity {
                 FirebaseUser currentUser = firebaseAuth.getCurrentUser();
                 if (currentUser != null) {
                     Log.d(TAG, "User is logged in");
+                    user = currentUser.getEmail();
                 } else {
                     Log.d(TAG, "User should not have access to this.");
                     Intent intent = new Intent(NavigationHostActivity.this, MainActivity.class);
@@ -92,7 +94,6 @@ public class NavigationHostActivity extends AppCompatActivity {
         }else if (menuItem.getItemId() == R.id.logout) {
             mAuth.signOut();
             Log.d(TAG, "User is logged out.");
-            Intent intent = new Intent(NavigationHostActivity.this, MainActivity.class);
             return;
         } //else if
 
@@ -108,6 +109,8 @@ public class NavigationHostActivity extends AppCompatActivity {
     private ActionBarDrawerToggle setupDrawerToggle() {
         return new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close );
     }
+
+    public static String getUser() {return user;}
 
     // onPostCreate is called when activity start-up is complete after onStart()
     @Override

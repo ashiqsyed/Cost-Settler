@@ -38,6 +38,7 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
     private String path;
     private List<Purchase> purchases;
     private String key;
+    private String user;
 
     public ItemRecyclerAdapter(List<Item> items, Context context, String path, String key) {
         this.items = items;
@@ -75,6 +76,8 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                 editButton = view.findViewById(R.id.changeButton);
                 topView = view;
             }
+            user = NavigationHostActivity.getUser();
+            user = user.substring(0, user.indexOf("@"));
         }
     }
 
@@ -219,7 +222,6 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                 fragment.setArguments(bundle);
                 Log.d(TAG, "Edit item " + item.getItemName() + " key " + item.getKey());
                 Log.d(TAG, "size: " + items.size());
-                Log.d(TAG, "TESTING TESTING TESTING");
 
                 AppCompatActivity activity = (AppCompatActivity) topView.getContext();
                 FragmentManager fragmentManager = activity.getSupportFragmentManager();
@@ -237,22 +239,25 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                             snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void unused) {
-                                    Log.d(TAG, "deleted item " + item.getItemName() + " key " + item.getKey());
+                                    Log.d(TAG, "deleted item " + item.getItemName() + " key "
+                                            + item.getKey() + " from list");
                                     item.setKey(null);
-                                    ref = db.getReference("shoppingCart");
+                                    ref = db.getReference("shoppingCart").child(user);
                                     ref.push().setValue(item)
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void unused) {
                                                     Log.d(TAG, "Item added to Firebase database");
-                                                    Toast.makeText(context.getApplicationContext(), "Item added to the shopping cart", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context.getApplicationContext(),
+                                                            "Item added to the shopping cart", Toast.LENGTH_SHORT).show();
                                                 }
                                             })
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
                                                     Log.d(TAG, "Item was not added to Firebase database");
-                                                    Toast.makeText(context.getApplicationContext(), "Failed to add item to the shopping cart.", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context.getApplicationContext(),
+                                                            "Failed to add item to the shopping cart.", Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                 }
@@ -265,8 +270,6 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                     });
                 });
             }
-
-
         }
         if (purchases != null) {
             Log.d(TAG, "display purchases");
