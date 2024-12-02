@@ -142,52 +142,58 @@ public class ShoppingCartFragment extends Fragment {
         purchaseButton.setOnClickListener(view2 -> {
             DatabaseReference ref2;
             Purchase purchase;
-            double cost = Double.parseDouble(costInput.getText().toString());
-            if (bundle == null) {
-                ref2 = db.getReference("purchases");
-                purchase = new Purchase(items, cost, user, new Date().toString());
-                ref2.push().setValue(purchase)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Log.d(TAG, "purchase added to database");
-                                Toast.makeText(getContext(), "Purchase made", Toast.LENGTH_SHORT).show();
-                                items.clear(); //clear list
-                                itemRecyclerAdapter.notifyDataSetChanged();
-                                ref.removeValue(); //removes it from firebase "shoppingcart"
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "Purchase not added to database");
-                                Toast.makeText(getContext(), "Purchase failed", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+            if (costInput.getText().toString() == null || costInput.getText().toString().length() == 0) {
+                Log.d(TAG, "User did not enter cost");
+                Toast.makeText(getContext(), "You must enter the cost of the shopping cart.", Toast.LENGTH_SHORT).show();
             } else {
-                ref2 = db.getReference("purchases").child(key);
-                purchase = new Purchase(items, cost, bundle.getString("user"), bundle.getString("date"));
-                ref2.setValue(purchase)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                double cost = Double.parseDouble(costInput.getText().toString());
+                if (bundle == null) {
+                    ref2 = db.getReference("purchases");
+                    purchase = new Purchase(items, cost, user, new Date().toString());
+                    ref2.push().setValue(purchase)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
 
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Log.d(TAG, "purchase edited in database");
-                                Toast.makeText(getContext(), "Purchase edited", Toast.LENGTH_SHORT).show();
-                                AppCompatActivity activity = (AppCompatActivity) topView.getContext();
-                                FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                                fragmentManager.popBackStack();
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "Purchase not edited in database");
-                                Toast.makeText(getContext(), "Purchase edit failed", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    Log.d(TAG, "purchase added to database");
+                                    Toast.makeText(getContext(), "Purchase made", Toast.LENGTH_SHORT).show();
+                                    items.clear(); //clear list
+                                    itemRecyclerAdapter.notifyDataSetChanged();
+                                    ref.removeValue(); //removes it from firebase "shoppingcart"
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d(TAG, "Purchase not added to database");
+                                    Toast.makeText(getContext(), "Purchase failed", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    ref2 = db.getReference("purchases").child(key);
+                    purchase = new Purchase(items, cost, bundle.getString("user"), bundle.getString("date"));
+                    ref2.setValue(purchase)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    Log.d(TAG, "purchase edited in database");
+                                    Toast.makeText(getContext(), "Purchase edited", Toast.LENGTH_SHORT).show();
+                                    AppCompatActivity activity = (AppCompatActivity) topView.getContext();
+                                    FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                                    fragmentManager.popBackStack();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d(TAG, "Purchase not edited in database");
+                                    Toast.makeText(getContext(), "Purchase edit failed", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
             }
+            costInput.setText("");
         });
 
 

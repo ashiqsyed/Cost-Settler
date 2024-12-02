@@ -62,11 +62,19 @@ public class AddItemFragment extends Fragment {
         } else {path = "shoppingList";}
 
         addButton.setOnClickListener(view2 -> {
-            String itemName = itemNameInput.getText().toString();
-            int quantity = Integer.parseInt(quantityInput.getText().toString());
-            Item item = new Item(itemName, quantity);
-            Log.d(TAG, item.toString());
-            addItem(item);
+
+            if (itemNameInput.getText().toString() == null || quantityInput.getText().toString() == null
+            || itemNameInput.getText().toString().length() == 0 || quantityInput.getText().toString().length() == 0) {
+                Toast.makeText(getContext(), "You must enter an item and its quantity.", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Item name and/or quanitity are missing");
+            } else {
+                String itemName = itemNameInput.getText().toString();
+                int quantity = Integer.parseInt(quantityInput.getText().toString());
+                Item item = new Item(itemName, quantity);
+                Log.d(TAG, item.toString());
+                addItem(item);
+            }
+
         });
 
 

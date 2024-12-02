@@ -38,29 +38,38 @@ public class RegistrationActivity extends AppCompatActivity {
         Button registerButton = findViewById(R.id.registerButton);
 
         registerButton.setOnClickListener(view -> {
-            String email = emailInput.getText().toString();
-            String password = passwordInput.getText().toString();
-            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+//            Log.d(TAG, "email is " + emailInput.getText().toString() + " of length " + emailInput.getText().toString().length());
+//            Log.d(TAG, "password is " + passwordInput.getText().toString());
+            if (emailInput.getText().toString() == null || passwordInput.getText().toString() == null
+                || emailInput.getText().toString().length() == 0 || passwordInput.getText().toString().length() == 0) {
+                Toast.makeText(this, "You must enter an email and a password.", Toast.LENGTH_SHORT).show();
 
-            firebaseAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(RegistrationActivity.this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(getApplicationContext(), "Registered user: " + email, Toast.LENGTH_SHORT).show();
-                                Log.d(TAG, "user created");
-                                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
-                                ref.push().setValue(email.substring(0, email.indexOf("@")));
-                                Intent intent = new Intent(view.getContext(), NavigationHostActivity.class);
-                                startActivity(intent);
-                                finish();
-                            } else {
-                                Log.w(TAG, "user failed to create", task.getException());
-                                Toast.makeText(RegistrationActivity.this, "An account with this email already exists. Please enter another email.", Toast.LENGTH_SHORT).show();
+            } else {
+                String email = emailInput.getText().toString();
+                String password = passwordInput.getText().toString();
+                FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+                Log.d(TAG, "CHECK");
+                firebaseAuth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(RegistrationActivity.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), "Registered user: " + email, Toast.LENGTH_SHORT).show();
+                                    Log.d(TAG, "user created");
+                                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                                    ref.push().setValue(email.substring(0, email.indexOf("@")));
+                                    Intent intent = new Intent(view.getContext(), NavigationHostActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    Log.w(TAG, "user failed to create", task.getException());
+                                    Toast.makeText(RegistrationActivity.this, "An account with this email already exists. Please enter another email.", Toast.LENGTH_SHORT).show();
+                                }
                             }
-                        }
-                    });
-            Log.d(TAG, "User email: " + email + " and password: " + password);
+                        });
+                Log.d(TAG, "User email: " + email + " and password: " + password);
+            }
+
         });
     }
 }

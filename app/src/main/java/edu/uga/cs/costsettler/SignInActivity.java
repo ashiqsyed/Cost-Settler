@@ -37,25 +37,31 @@ public class SignInActivity extends AppCompatActivity {
         Button signInButton = findViewById(R.id.signInButton);
 
         signInButton.setOnClickListener(view -> {
-            String email = emailInput2.getText().toString();
-            String password = passwordInput2.getText().toString();
+            if (emailInput2.getText().toString() == null || passwordInput2.getText().toString() == null
+                || emailInput2.getText().toString().length() == 0 || passwordInput2.getText().toString().length() == 0) {
+                Toast.makeText(this, "You must enter an email and a password.", Toast.LENGTH_SHORT).show();
+            } else {
+                String email = emailInput2.getText().toString();
+                String password = passwordInput2.getText().toString();
 
-            FirebaseAuth mAuth = FirebaseAuth.getInstance();
-            mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "Sign in successful, email: " + email);
-                                Intent intent = new Intent(SignInActivity.this, NavigationHostActivity.class);
-                                startActivity(intent);
-                                finish();
-                            } else {
-                                Log.d(TAG, "Sign in failed");
-                                Toast.makeText(SignInActivity.this, "An account with this email does not exist.", Toast.LENGTH_SHORT).show();
+                FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                mAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "Sign in successful, email: " + email);
+                                    Intent intent = new Intent(SignInActivity.this, NavigationHostActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    Log.d(TAG, "Sign in failed");
+                                    Toast.makeText(SignInActivity.this, "An account with this email does not exist.", Toast.LENGTH_SHORT).show();
+                                }
                             }
-                        }
-                    });
+                        });
+            }
+
         });
     }
 }
