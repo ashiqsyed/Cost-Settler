@@ -49,10 +49,11 @@ public class Purchase {
     }
 
     public String toString() {
-        if (itemsPurchased.size() > 1) {
-            return "Purchase of " + itemsPurchased.size() + " items made on " + datePurchased + " by " + user;
+        if (itemsPurchased != null && itemsPurchased.size() > 0) {
+            return "Purchase of " + itemsPurchased.size() + " item(s) made on " + datePurchased + " by " + user;
         }
-        return "Purchase of 1 item made on " + datePurchased + " by " + user;
+        return "";
+
 
     }
 
