@@ -7,8 +7,12 @@
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/overviewText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Home Fragment" />
+        android:layout_margin="10dp"
+        android:text="Home Fragment"
+        android:textAlignment="center"
+        android:textSize="28sp" />
 
 </FrameLayout>

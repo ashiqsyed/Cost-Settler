@@ -38,8 +38,6 @@ public class RegistrationActivity extends AppCompatActivity {
         Button registerButton = findViewById(R.id.registerButton);
 
         registerButton.setOnClickListener(view -> {
-//            Log.d(TAG, "email is " + emailInput.getText().toString() + " of length " + emailInput.getText().toString().length());
-//            Log.d(TAG, "password is " + passwordInput.getText().toString());
             if (emailInput.getText().toString() == null || passwordInput.getText().toString() == null
                 || emailInput.getText().toString().length() == 0 || passwordInput.getText().toString().length() == 0) {
                 Toast.makeText(this, "You must enter an email and a password.", Toast.LENGTH_SHORT).show();
