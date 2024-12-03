@@ -50,7 +50,7 @@ public class Purchase {
 
     public String toString() {
         if (itemsPurchased != null && itemsPurchased.size() > 0) {
-            return "Purchase of " + itemsPurchased.size() + " item(s) made on " + datePurchased +
+            return "Purchase of " + itemsPurchased + " item(s) made on " + datePurchased +
                     " for " + cost + " dollars by " + user;
         }
         return "";
