@@ -162,24 +162,48 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                             }
                         });
                     } else {
-                        ref = db.getReference("purchases").child(key).child("itemsPurchased");
-                        items.remove(pos);
-                        ref.setValue(items)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        if (items.size() == 1) {
+                            ref = db.getReference("purchases").child(key);
+                            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    snapshot.getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+                                            Log.d(TAG, "deleted purchase");
+                                            Toast.makeText(context.getApplicationContext(), "Deleted Item", Toast.LENGTH_SHORT).show();
+                                            AppCompatActivity activity = (AppCompatActivity) topView.getContext();
+                                            FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                                            fragmentManager.popBackStack();
+                                        }
+                                    });
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    Log.d(TAG, "Failed to delete purchase");
+                                    Toast.makeText(context.getApplicationContext(), "failed to delete item", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
+                            ref = db.getReference("purchases").child(key).child("itemsPurchased");
+                            items.remove(pos);
+                            ref.setValue(items)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
 
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        Log.d(TAG, "Item removed from database");
-                                        Toast.makeText(context.getApplicationContext(), "Item removed", Toast.LENGTH_SHORT).show();
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Log.d(TAG, "Item not removed from database");
-                                        Toast.makeText(context.getApplicationContext(), "Item remove failed", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                        @Override
+                                        public void onSuccess(Void unused) {
+                                            Log.d(TAG, "Item removed from database");
+                                            Toast.makeText(context.getApplicationContext(), "Item removed", Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d(TAG, "Item not removed from database");
+                                            Toast.makeText(context.getApplicationContext(), "Item remove failed", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
                     }
                 } else {
                     Log.d(TAG, "Delete purchase");
