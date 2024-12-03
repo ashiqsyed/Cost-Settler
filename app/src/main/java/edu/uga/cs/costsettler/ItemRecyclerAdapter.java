@@ -107,12 +107,8 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
 
             holder.deleteButton.setOnClickListener(view -> {
                 Log.d(TAG, "Delete item " + item.getItemName() + " key " + item.getKey());
-                if(key != null) {
-                    ref = db.getReference().child(path).child(item.getKey()); //get reference to item being clicked
-                } else {
-                    ref = db.getReference(path);
-                }
                 if(path.equals("shoppingList")) { //action if clicked in shoppinglist recycler
+                    ref = db.getReference().child(path).child(item.getKey());
                     ref.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -132,7 +128,7 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                     });
                 } else if (path.equals("shoppingCart")) {
                     if (key == null) {
-                        ref = ref.child(user).child(item.getKey());
+                        ref = db.getReference(path).child(user).child(item.getKey());
                         ref.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -212,6 +208,7 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemRecyclerAdapte
                     }
                 } else {
                     Log.d(TAG, "Delete purchase");
+                    ref = db.getReference(path).child(item.getKey());
                     ref.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
